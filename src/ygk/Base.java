@@ -1,5 +1,9 @@
 package ygk;
 
+import ygk.util.AfterImageManager;
+import ygk.util.SystemMonitor;
+import ygk.util.TickManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
@@ -12,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.ArrayList;
 import java.lang.Runnable;
+import java.util.function.Consumer;
 
 public abstract class Base extends JPanel implements IFrameSize {
 
@@ -22,15 +27,15 @@ public abstract class Base extends JPanel implements IFrameSize {
 
     protected ViewMetrics viewMetrics;
 
-    public long tick;
-    int lastPlayTime;
-    int totalPlayTime = 0;
-    int sessionPlayTime = 0;
+    private TickManager tickManager = null;
+    private SystemMonitor systemMonitor = null;
+    private AfterImageManager afterImageManager = null;
 
     private final List<Runnable> updatables = new ArrayList<>();
+    private final List<Consumer<Graphics>> renderables = new ArrayList<>();
 
     public Base(String title) {
-        frame = new JFrame(title + "(Powered by Yooncrow Game Kit)");
+        frame = new JFrame(title + " (Powered by Yooncrow Game Kit)");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(true);
 
@@ -82,6 +87,9 @@ public abstract class Base extends JPanel implements IFrameSize {
             }
         });
 
+            tickManager = new TickManager();
+            registerUpdatable(tickManager::update);
+
         initGame();
 
         viewMetrics.calculateViewMetrics();
@@ -98,8 +106,9 @@ public abstract class Base extends JPanel implements IFrameSize {
             double deltaTime = (now - lastTime) / 1_000_000_000.0; // 초 단위
             lastTime = now;
 
-            update(deltaTime);
             SwingUtilities.invokeLater(this::repaint);
+
+            update(deltaTime);
 
             for (Runnable updatable : updatables) {
                 updatable.run();
@@ -123,6 +132,33 @@ public abstract class Base extends JPanel implements IFrameSize {
         this.updatables.add(updateLogic);
     }
 
+    protected void registerRenderable(Consumer<Graphics> renderLogic) {
+        this.renderables.add(renderLogic);
+    }
+
+    protected SystemMonitor getSystemMonitor() {
+        if (systemMonitor == null) {
+            systemMonitor = new SystemMonitor();
+            // Base의 자동 업데이트 루프에 등록
+            registerUpdatable(systemMonitor::update);
+        }
+        return systemMonitor;
+    }
+
+    protected AfterImageManager getAfterImageManager() {
+        if (afterImageManager == null) {
+            afterImageManager = new AfterImageManager();
+            // Base의 자동 업데이트/렌더 루프에 등록
+            registerUpdatable(afterImageManager::update);
+            registerRenderable(afterImageManager::draw);
+        }
+        return afterImageManager;
+    }
+
+    protected TickManager getTickManager() {
+        return tickManager;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -133,13 +169,17 @@ public abstract class Base extends JPanel implements IFrameSize {
         d2.translate(viewMetrics.getCurrentXOffset(), viewMetrics.getCurrentYOffset());
         d2.scale(viewMetrics.getCurrentScale(), viewMetrics.getCurrentScale());
 
+        for (Consumer<Graphics> drawFunction : renderables) {
+            drawFunction.accept(g); // Graphics 객체 'g'를 전달하며 실행!
+        }
+
         render(g);
 
         g.setColor(Color.black);
         g.fillRect(-500,1060,3920,200);
         g.setFont(new Font("Arial", Font.PLAIN, 15));
         g.setColor(Color.white);
-        g.drawString("Powered by Yooncrow Game Kit          Version = Alpha 1.1", 10 , 1075);
+        g.drawString("Powered by Yooncrow Game Kit          Version = Alpha 1.2", 10 , 1075);
     }
 
     @Override public int getComponentWidth() { return this.getWidth(); }
