@@ -6,10 +6,7 @@ import ygk.util.TickManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,16 +35,17 @@ public abstract class Base extends JPanel implements IFrameSize {
         frame = new JFrame(title + " (Powered by Yooncrow Game Kit)");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(true);
+        setFocusable(true);
 
         frame.setPreferredSize((new Dimension(1280,720)));
-        frame.setFocusable(true);
 
         viewMetrics = new ViewMetrics(this);
 
         frame.add(this);
         frame.setVisible(true);
-        frame.setFocusable(true);
-        frame.requestFocus();
+        this.setFocusable(true);
+        this.requestFocus();
+        frame.setFocusable(false); // JFrame은 포커스를 받지 않도록 설정
         frame.pack();
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
@@ -87,14 +85,18 @@ public abstract class Base extends JPanel implements IFrameSize {
             }
         });
 
-            tickManager = new TickManager();
-            registerUpdatable(tickManager::update);
-
-        initGame();
+        tickManager = new TickManager();
+        registerUpdatable(tickManager::update);
 
         viewMetrics.calculateViewMetrics();
 
+
         startGameLoop();
+        SwingUtilities.invokeLater(() -> {
+            // 모든 UI 이벤트 처리 후 (가장 안정적일 때)
+            this.requestFocusInWindow(); // 포커스 확보 (재차 요청)
+            this.initGame();             // <-- 여기에 initGame을 호출
+        });
     }
 
     private void startGameLoop() {
@@ -120,6 +122,8 @@ public abstract class Base extends JPanel implements IFrameSize {
     protected abstract void update(double deltaTime);
     protected abstract void initGame();
     protected abstract void render(Graphics g);
+    protected void addKeyAdapter(KeyListener kd) { this.addKeyListener(kd);
+        System.out.println("qnxdma");}
 
     public final int getMouseX() { return viewMetrics.getVirtualMouseX(); }
     public final int getMouseY() { return viewMetrics.getVirtualMouseY(); }

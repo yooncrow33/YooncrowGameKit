@@ -1,6 +1,6 @@
 package ygk;
 
-public class ViewMetrics implements IViewMetrics, IMouse {
+class ViewMetrics implements IViewMetrics, IMouse {
     int windowWidth;
     private int windowHeight;
     private double currentScale;
