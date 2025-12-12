@@ -24,7 +24,7 @@ public abstract class AfterImage {
         ALPHA -= ALPHA_DEGREE;
     }
 
-    protected boolean isExpired() {
+    public boolean isExpired() {
         return ALPHA <= 0;
     }
 
