@@ -1,12 +1,14 @@
-package ygk.util;
+package ygk;
+
+import ygk.util.AfterImage;
 
 import java.util.ArrayList;
 
-public class AfterImageManager {
+class AfterImageManager {
 
     ArrayList <AfterImage> afterImages = new ArrayList<>();
 
-    public void addAfterImage(AfterImage afterImage) {
+    protected void addAfterImage(AfterImage afterImage) {
         afterImages.add(afterImage);
     }
 

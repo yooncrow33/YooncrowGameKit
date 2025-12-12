@@ -1,8 +1,6 @@
-package ygk.util;
+package ygk;
 
-import ygk.IUpdate;
-
-public class TickManager implements ITick{
+class TickManager implements ITick{
     private long tick = 0;
     //private int lastPlayTime;
     private int totalPlayTime = 0;

@@ -1,9 +1,9 @@
-package ygk.util;
+package ygk;
 
 import com.sun.management.OperatingSystemMXBean;
 import java.lang.management.ManagementFactory;
 
-public class SystemMonitor implements ISystemMonitor {
+class SystemMonitor implements ISystemMonitor {
 
     private final OperatingSystemMXBean mxbean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 

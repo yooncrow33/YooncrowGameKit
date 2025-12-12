@@ -1,9 +1,5 @@
 package ygk;
 
-import ygk.util.AfterImageManager;
-import ygk.util.SystemMonitor;
-import ygk.util.TickManager;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -45,7 +41,7 @@ public abstract class Base extends JPanel implements IFrameSize {
         frame.setVisible(true);
         this.setFocusable(true);
         this.requestFocus();
-        frame.setFocusable(false); // JFrame은 포커스를 받지 않도록 설정
+        this.requestFocusInWindow();
         frame.pack();
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
@@ -94,6 +90,7 @@ public abstract class Base extends JPanel implements IFrameSize {
         startGameLoop();
         SwingUtilities.invokeLater(() -> {
             // 모든 UI 이벤트 처리 후 (가장 안정적일 때)
+            this.setFocusable(true);
             this.requestFocusInWindow(); // 포커스 확보 (재차 요청)
             this.initGame();             // <-- 여기에 initGame을 호출
         });
@@ -183,7 +180,7 @@ public abstract class Base extends JPanel implements IFrameSize {
         g.fillRect(-500,1060,3920,200);
         g.setFont(new Font("Arial", Font.PLAIN, 15));
         g.setColor(Color.white);
-        g.drawString("Powered by Yooncrow Game Kit          Version = Alpha 1.3", 10 , 1075);
+        g.drawString("Powered by Yooncrow Game Kit          Version = Alpha 1.3.1       2025.12.12", 10 , 1075);
     }
 
     @Override public int getComponentWidth() { return this.getWidth(); }
